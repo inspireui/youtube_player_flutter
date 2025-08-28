@@ -47,7 +47,7 @@ class FullscreenYoutubePlayer extends StatefulWidget {
 
   /// The background color of the [WebView].
   ///
-  /// Default to [ColorScheme.background].
+  /// Default to [ColorScheme.surface].
   final Color? backgroundColor;
 
   @override
@@ -97,7 +97,10 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
       autoPlay: true,
       params: const YoutubePlayerParams(showFullscreenButton: true),
     )..setFullScreenListener((_) async {
-        Navigator.pop(context, await _controller.currentTime);
+        final currentTime = await _controller.currentTime;
+        if (!mounted) return;
+
+        Navigator.pop(context, currentTime);
       });
 
     SystemChrome.setPreferredOrientations(
@@ -111,10 +114,15 @@ class _FullscreenYoutubePlayerState extends State<FullscreenYoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context, await _controller.currentTime);
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _controller.currentTime.then(
+          (time) {
+            if (context.mounted) return Navigator.pop(context, time);
+          },
+        );
       },
       child: YoutubePlayer(
         controller: _controller,

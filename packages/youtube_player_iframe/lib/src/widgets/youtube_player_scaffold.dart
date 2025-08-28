@@ -36,7 +36,7 @@ class YoutubePlayerScaffold extends StatefulWidget {
     this.enableFullScreenOnVerticalDrag = true,
     this.backgroundColor,
     @Deprecated('Unused parameter. Use `YoutubePlayerParam.userAgent` instead.')
-        this.userAgent,
+    this.userAgent,
   });
 
   /// Builds the child widget.
@@ -160,11 +160,12 @@ class _FullScreen extends StatefulWidget {
 
 class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
   Orientation? _previousOrientation;
+  bool canPop = false;
 
   @override
   void initState() {
     super.initState();
-
+    canPop = Navigator.of(context).canPop();
     if (widget.auto) WidgetsBinding.instance.addObserver(this);
     SystemChrome.setPreferredOrientations(_deviceOrientations);
     SystemChrome.setEnabledSystemUIMode(_uiMode);
@@ -200,8 +201,9 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _handleFullScreenBackAction,
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: _handleFullScreenBackAction,
       child: widget.child,
     );
   }
@@ -230,12 +232,11 @@ class _FullScreenState extends State<_FullScreen> with WidgetsBindingObserver {
         : SystemUiMode.edgeToEdge;
   }
 
-  Future<bool> _handleFullScreenBackAction() async {
+  void _handleFullScreenBackAction(bool didPop, _) {
+    if (didPop) return;
+
     if (mounted && widget.fullScreenOption.enabled) {
       YoutubePlayerControllerProvider.of(context).exitFullScreen();
-      return false;
     }
-
-    return true;
   }
 }

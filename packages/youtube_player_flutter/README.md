@@ -68,13 +68,13 @@ YoutubePlayerController _controller = YoutubePlayerController(
 YoutubePlayer(
     controller: _controller,
     showVideoProgressIndicator: true,
-    videoProgressIndicatorColor: Colors.amber,
-    progressColors: ProgressColors(
-        playedColor: Colors.amber,
-        handleColor: Colors.amberAccent,
+    progressIndicatorColor: Colors.amber,
+    progressColors: const ProgressBarColors(
+      playedColor: Colors.amber,
+      handleColor: Colors.amberAccent,
     ),
-    onReady () {
-        _controller.addListener(listener);
+    onReady: () {
+      _controller.addListener(listener);
     },
 ),
 ```
@@ -151,7 +151,7 @@ print(videoId); // BBAyRBTfsOU
 
 ## Example
 
-[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/master/packages/youtube_player_flutter/example)
+[Detailed Example](https://github.com/sarbagyastha/youtube_player_flutter/tree/main/packages/youtube_player_flutter/example)
 
 ## Quick Links
 * [YoutubePlayer](https://pub.dev/documentation/youtube_player_flutter/latest/youtube_player_flutter/YoutubePlayer-class.html)

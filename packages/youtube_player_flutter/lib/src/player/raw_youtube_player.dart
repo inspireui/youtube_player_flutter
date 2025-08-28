@@ -13,20 +13,17 @@ import '../utils/youtube_player_controller.dart';
 ///
 /// Use [YoutubePlayer] instead.
 class RawYoutubePlayer extends StatefulWidget {
-  /// Sets [Key] as an identification to underlying web view associated to the player.
-  final Key? key;
+  /// Creates a [RawYoutubePlayer] widget.
+  const RawYoutubePlayer({
+    super.key,
+    this.onEnded,
+  });
 
   /// {@macro youtube_player_flutter.onEnded}
   final void Function(YoutubeMetaData metaData)? onEnded;
 
-  /// Creates a [RawYoutubePlayer] widget.
-  RawYoutubePlayer({
-    this.key,
-    this.onEnded,
-  });
-
   @override
-  _RawYoutubePlayerState createState() => _RawYoutubePlayerState();
+  State<RawYoutubePlayer> createState() => _RawYoutubePlayerState();
 }
 
 class _RawYoutubePlayerState extends State<RawYoutubePlayer>
@@ -76,30 +73,23 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
         key: widget.key,
         initialData: InAppWebViewInitialData(
           data: player,
-          baseUrl: Uri.parse('https://www.youtube.com'),
           encoding: 'utf-8',
+          baseUrl: WebUri.uri(Uri.https('youtube-nocookie.com')),
           mimeType: 'text/html',
         ),
-        initialOptions: InAppWebViewGroupOptions(
-          crossPlatform: InAppWebViewOptions(
-            userAgent: userAgent,
-            mediaPlaybackRequiresUserGesture: false,
-            transparentBackground: true,
-            disableContextMenu: true,
-            supportZoom: false,
-            disableHorizontalScroll: false,
-            disableVerticalScroll: false,
-            useShouldOverrideUrlLoading: true,
-          ),
-          ios: IOSInAppWebViewOptions(
-            allowsInlineMediaPlayback: true,
-            allowsAirPlayForMediaPlayback: true,
-            allowsPictureInPictureMediaPlayback: true,
-          ),
-          android: AndroidInAppWebViewOptions(
-            useWideViewPort: false,
-            useHybridComposition: controller!.flags.useHybridComposition,
-          ),
+        initialSettings: InAppWebViewSettings(
+          userAgent: userAgent,
+          mediaPlaybackRequiresUserGesture: false,
+          transparentBackground: true,
+          disableContextMenu: true,
+          supportZoom: false,
+          disableHorizontalScroll: false,
+          disableVerticalScroll: false,
+          allowsInlineMediaPlayback: true,
+          allowsAirPlayForMediaPlayback: true,
+          allowsPictureInPictureMediaPlayback: true,
+          useWideViewPort: false,
+          useHybridComposition: controller!.flags.useHybridComposition,
         ),
         onWebViewCreated: (webController) {
           controller!.updateValue(
@@ -195,8 +185,11 @@ class _RawYoutubePlayerState extends State<RawYoutubePlayer>
             ..addJavaScriptHandler(
               handlerName: 'Errors',
               callback: (args) {
+                final errorCode = args.first is int
+                    ? args.first
+                    : int.tryParse(args.first) ?? -1;
                 controller!.updateValue(
-                  controller!.value.copyWith(errorCode: int.parse(args.first)),
+                  controller!.value.copyWith(errorCode: errorCode),
                 );
               },
             )
